@@ -15,8 +15,13 @@ library(plyr)
 library(scales)
 library(MASS)
 
+#directory
+dir <- "C:/Users/KristineT.SCCWRP2K/Documents/Git/SMC_hydromod/data/"
+
 #read in SMC hydrmod data
-data <- read.csv("P:/KrisTaniguchi/Hydromod_SMC/Data/final_sent_to_john/Hydromod project combined variables.csv")
+fname <- paste0(dir, "Hydromod project combined variables_wood_KTQ.csv")
+data <- read.csv(fname)
+
 #create new column for vert and lat suscept 
 data$vert.rating <- revalue(data$VertSuscept, c("VERY HIGH" = 4, "High"= 3, "MEDIUM" = 2, "LOW" = 1, "Unk" = NA))
   data$vert.rating <- as.numeric(as.character(data$vert.rating))
@@ -27,10 +32,13 @@ data$d50[data$d50== -88] <- NA
 #subset data to most recent year surveyed
 data$sampledate <- as.Date(as.character(data$sampledate), "%m/%d/%Y")
 sub <- data %>% group_by(stationcode) %>% slice(which.max(sampledate)) %>% data.frame()
-#export subsetted data as csv
-write.csv(sub, file="P:/KrisTaniguchi/Hydromod_SMC/Data/final_sent_to_john/Hydromod project combined variables_subsetrecentsurveyonly2.csv")
 
-#determine if concrete, eng.softbottom, or natural (channel type: natural or engineered)
+#export subsetted data as csv
+write.csv(sub, file=paste0(dir,"Hydromod project combined variables_subsetrecentsurveyonly2.csv"))
+
+######################
+#determine the channel type: natural, hardened all, soft.all, hardened.sides
+#note: Other bottom is concrete/asphalt/rock with hardened banks
 channeltype2 <- NA
 
 for(i in 1:length(sub$stationcode)){
@@ -38,10 +46,12 @@ for(i in 1:length(sub$stationcode)){
     channeltype2[i] <- NA
   }else if(sub$channeltype[i]=="Natural"){
       channeltype2[i] <- "Natural"
-  }else if(sub$bottom[i] == "Soft/Natural"){
-      channeltype2[i] <- "Engineered_SoftBottom"
-  }else if(sub$bottom[i] == "Concrete"){
-      channeltype2[i] <- "Concrete"
+  }else if(sub$bottom[i] == "Concrete" | sub$bottom[i] == "Grouted rock" | sub$bottom[i] == "Other"){
+    channeltype2[i] <- "Hardened Entire"
+  }else if((sub$bottom[i] == "Soft/Natural") & (sub$leftsideofstructure[i]  == "Earthen" | sub$leftsideofstructure[i]  == "Earthen bare" | sub$leftsideofstructure[i]  == "Vegetative/Natural") & (sub$rightsideofstructure[i]  == "Earthen" | sub$rightsideofstructure[i]  == "Earthen bare" | sub$rightsideofstructure[i]  == "Vegetative/Natural") ){
+    channeltype2[i] <- "Soft Entire"
+  }else if((sub$bottom[i] == "Soft/Natural") & (sub$leftsideofstructure[i]  == "Concrete" | sub$leftsideofstructure[i]  == "Grouted rock" | sub$leftsideofstructure[i]  == "Rock") | (sub$rightsideofstructure[i]  == "Concrete" | sub$rightsideofstructure[i]  == "Grouted rock" | sub$rightsideofstructure[i]  == "Rock") ){
+      channeltype2[i] <- "Hardened Side(s)"
   }else{
     channeltype2[i] <- NA
   }
@@ -50,11 +60,103 @@ for(i in 1:length(sub$stationcode)){
 #save new channel type vector into sub df
 sub$channeltype2 <- channeltype2
 
-#Stacked barplots for concrete, engineered_softbottom, and natural
+#Also put natural and soft all into one category: Natural/Soft All for channeltype3
+sub$channeltype3 <- channeltype2
+sub$channeltype3[sub$channeltype3=="Soft Entire"] <- "Natural/Soft Entire"
+sub$channeltype3[sub$channeltype3=="Natural"] <- "Natural/Soft Entire"
+
+#Also create coarser category based on earthen vs. engineered
+sub$channeltype4 <- sub$channeltype3
+sub$channeltype4[sub$channeltype4=="Natural/Soft Entire"] <- "Earthen"
+sub$channeltype4[sub$channeltype4=="Hardened Side(s)"] <- "Engineered"
+sub$channeltype4[sub$channeltype4=="Hardened Entire"] <- "Engineered"
+
+
+
+######################
+#Summary of sites, numbers per channel type
+
+#all sites by channel type
+all.channeltype3 <- data.frame(aggregate(sub, by = sub[c('channeltype3')], length))
+all.channeltype3$count <- all.channeltype3$SiteYear
+total <- sum(all.channeltype3$SiteYear)
+
+#channel type 2 counts summary, better to use channel type3
 vert.suscept <- data.frame(aggregate(sub, by = sub[c('channeltype2','vert.rating')], length))
   vert.suscept$count <- vert.suscept$SiteYear
 lat.suscept <- data.frame(aggregate(sub, by = sub[c('channeltype2','av.lat.rating')], length))
   lat.suscept$count <- lat.suscept$SiteYear
+
+#channel type 3 counts summary
+vert.suscept.2 <- data.frame(aggregate(sub, by = sub[c('channeltype3','vert.rating')], length))
+  vert.suscept.2$count <- vert.suscept.2$SiteYear
+lat.suscept.2 <- data.frame(aggregate(sub, by = sub[c('channeltype3','av.lat.rating')], length))
+  lat.suscept.2$count <- lat.suscept.2$SiteYear
+  
+#land use and channel type 4
+lu.channeltype4 <- data.frame(aggregate(sub, by = sub[c('channeltype4', 'smc_lu')], length))
+lu.channeltype4$count <- lu.channeltype4$SiteYear
+#exlcude SMC_out land use
+lu.channeltype4<- lu.channeltype4[lu.channeltype4$smc_lu != "SMC_out",]
+  #create new name for lu channeltype4
+lu.channeltype4$lu.ch4.names <- c("Ag Earthen", "Ag Engineered", "Open Earthen", "Open Engineered", "Urban Earthen", "Urban Engineered")
+
+#vertical by land use channel type *** use this for bar plots
+#land use and channel type 4
+vert.lu.channeltype4 <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype4','vert.rating')], length))
+vert.lu.channeltype4$count <- vert.lu.channeltype4$SiteYear
+#exlcude SMC_out land use
+vert.lu.channeltype4<- data.frame(vert.lu.channeltype4[vert.lu.channeltype4$smc_lu != "SMC_out",])
+#create new name for lu channeltype4
+vert.lu.channeltype4$vert.lu.ch4.names <- paste0(vert.lu.channeltype4$smc_lu, " ", vert.lu.channeltype4$channeltype4)
+vert.lu.channeltype4$vert.lu.ch4.names <- gsub("Agricultural", "Ag", vert.lu.channeltype4$vert.lu.ch4.names)
+  
+#vertical by land use channel type *** use this for bar plots
+#land use and channel type 4
+lat.lu.channeltype4 <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype4','av.lat.rating')], length))
+lat.lu.channeltype4$count <- lat.lu.channeltype4$SiteYear
+#exlcude SMC_out land use
+lat.lu.channeltype4<- data.frame(lat.lu.channeltype4[lat.lu.channeltype4$smc_lu != "SMC_out",])
+#create new name for lu channeltype4
+lat.lu.channeltype4$lat.lu.ch4.names <- paste0(lat.lu.channeltype4$smc_lu, " ", lat.lu.channeltype4$channeltype4)
+lat.lu.channeltype4$lat.lu.ch4.names <- gsub("Agricultural", "Ag", lat.lu.channeltype4$lat.lu.ch4.names)
+
+#count in each lu.channeltype category
+name.lu.chtype4 <- lu.channeltype4$lu.ch4.names
+count.lu.chtype4 <- lu.channeltype4$count
+lu.channeltype4.count.df <- data.frame(cbind(name.lu.chtype4, count.lu.chtype4))
+
+###Bar Plots
+#bar plot positions
+#reorder positions of lu
+vert.lu.channeltype4$smc_lu <- factor(vert.lu.channeltype4$smc_lu, levels= c("Open","Agricultural","Urban"))
+lat.lu.channeltype4$smc_lu <- factor(lat.lu.channeltype4$smc_lu, levels= c("Open","Agricultural","Urban"))
+
+#make sure numeric
+vert.lu.channeltype4$count <- as.numeric(vert.lu.channeltype4$count)
+lat.lu.channeltype4$count <- as.numeric(lat.lu.channeltype4$count)
+
+
+#vertical suscept
+ggplot(data = vert.lu.channeltype4) +
+  geom_bar(aes(x = smc_lu, y = count, fill = factor(vert.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
+  ggtitle("Vertical Susceptibility") +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  facet_wrap(~channeltype4) +
+  xlab("") + ylab("Proportion of Sites") +
+  scale_fill_manual(name = "Vertical Suscept.", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
+
+#lateral suscept
+ggplot(data = lat.lu.channeltype4) +
+  geom_bar(aes(x = smc_lu, y = count, fill = factor(av.lat.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
+  ggtitle("Lateral Susceptibility") +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  facet_wrap(~channeltype4) +
+  xlab("") + ylab("Proportion of Sites") +  
+  scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
+
+
+
 
   #vertical suscept
 ggplot(data = vert.suscept) +
@@ -72,6 +174,19 @@ ggplot(data = lat.suscept) +
   guides(fill = guide_legend(reverse = TRUE)) +
   xlab("") + ylab("") +
   scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #Ordinal logistic regression: looking at all channel types
