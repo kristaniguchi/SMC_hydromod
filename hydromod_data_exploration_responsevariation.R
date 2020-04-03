@@ -126,16 +126,22 @@ name.lu.chtype4 <- lu.channeltype4$lu.ch4.names
 count.lu.chtype4 <- lu.channeltype4$count
 lu.channeltype4.count.df <- data.frame(cbind(name.lu.chtype4, count.lu.chtype4))
 
-###Bar Plots
+######################
+###Bar Plots: vertical and lateral suscept by land use and channel type
+
 #bar plot positions
 #reorder positions of lu
 vert.lu.channeltype4$smc_lu <- factor(vert.lu.channeltype4$smc_lu, levels= c("Open","Agricultural","Urban"))
 lat.lu.channeltype4$smc_lu <- factor(lat.lu.channeltype4$smc_lu, levels= c("Open","Agricultural","Urban"))
 
-#make sure numeric
+#make sure count is numeric
 vert.lu.channeltype4$count <- as.numeric(vert.lu.channeltype4$count)
 lat.lu.channeltype4$count <- as.numeric(lat.lu.channeltype4$count)
 
+#annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
+anno <- data.frame(xstar = c(1,2,3,1,2,3), ystar = rep(0, 6),
+                   lab = c("(71)", "(36)","(31)","(3)","(11)","(53)"),
+                   channeltype4 = c("Earthen", "Earthen","Earthen","Engineered","Engineered","Engineered"))
 
 #vertical suscept
 ggplot(data = vert.lu.channeltype4) +
@@ -144,6 +150,7 @@ ggplot(data = vert.lu.channeltype4) +
   guides(fill = guide_legend(reverse = TRUE)) +
   facet_wrap(~channeltype4) +
   xlab("") + ylab("Proportion of Sites") +
+  geom_text(data = anno, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
   scale_fill_manual(name = "Vertical Suscept.", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
 
 #lateral suscept
@@ -153,84 +160,72 @@ ggplot(data = lat.lu.channeltype4) +
   guides(fill = guide_legend(reverse = TRUE)) +
   facet_wrap(~channeltype4) +
   xlab("") + ylab("Proportion of Sites") +  
+  geom_text(data = anno, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
   scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
 
+######################
+###Boxplots: CSCI and ASCI vs. Lateral and Vertical Susceptibility
+
+######CSCI vs. lateral and vert suscept
+
+#subset data to exclude medium,high,veryhigh hardened
+#channel type 3 counts summary
+vert.suscept.2 <- data.frame(aggregate(sub, by = sub[c('channeltype3','vert.rating')], length))
+  vert.suscept.2$count <- vert.suscept.2$SiteYear
+lat.suscept.2 <- data.frame(aggregate(sub, by = sub[c('channeltype3','av.lat.rating')], length))
+  lat.suscept.2$count <- lat.suscept.2$SiteYear
+# create new column for Channel type3 and vert/lat suscept
+sub$channeltype3.vert <- paste0(sub$VertSuscept, " ",sub$channeltype3 )
+sub$channeltype3.vert <- gsub("Natural/Soft Entire", "Earthen", sub$channeltype3.vert )
+sub$channeltype3.vert <- gsub("LOW", "Low", sub$channeltype3.vert )
+sub$channeltype3.vert <- gsub("MEDIUM", "Medium", sub$channeltype3.vert )
+# Exclude NA channel type and medium/high hardened sides(s), Unk
+  #find indices of channel type NA and unk and exclude them
+ind.NA <- which(is.na(sub$channeltype3))
+ind.highhardsides <- grep('High Hardened Side', as.character(sub$channeltype3.vert))
+ind.medhardsides <- grep("Medium Hardened Side", sub$channeltype3.vert)
+ind.unk <- grep("Unk", sub$channeltype3.vert)
+sub2.vert <- data.frame(sub[-c(ind.NA, ind.highhardsides, ind.medhardsides,ind.unk),])
+#create order of the categories for boxplots
+sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Earthen","Medium Earthen","High Earthen"))
+
+
+# create new column for Channel type3 and lateral suscept
+sub$channeltype3.lat <- paste0(sub$AverageLatSuscept, " ",sub$channeltype3 )
+sub$channeltype3.lat <- gsub("Natural/Soft Entire", "Earthen", sub$channeltype3.lat )
+sub$channeltype3.lat <- gsub("LOW", "Low", sub$channeltype3.lat )
+sub$channeltype3.lat <- gsub("MEDIUM", "Medium", sub$channeltype3.lat )
+sub$channeltype3.lat <- gsub("HIGH", "High", sub$channeltype3.lat )
+sub$channeltype3.lat <- gsub("VERY", "Very", sub$channeltype3.lat )
+  unique(sub$channeltype3.lat)
+  
+# Exclude NA channel type and medium/high hardened sides(s), Unk
+#find indices of channel type NA and unk and exclude them
+ind.NA.lat <- which(is.na(sub$AverageLatSuscept))
+ind.highhardsides.lat <- grep('High Hardened Side', as.character(sub$channeltype3.lat))
+ind.medhardsides.lat <- grep("Medium Hardened Side", sub$channeltype3.lat)
+ind.unk.lat <- grep("Unk", sub$channeltype3.lat)
+sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.highhardsides.lat, ind.medhardsides.lat,ind.unk.lat),])
+  unique(sub2.lat$channeltype3.lat)
+#create order of the categories for boxplots
+  sub2.lat$channeltype3.lat <- factor(sub2.lat$channeltype3.lat, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Earthen","Medium Earthen","High Earthen","Very High Earthen"))
+  
+#Boxplots Vertical suscept
+  #CSCI
+
+  
+  
+  
+  
+  
+
+  
 
 
 
-  #vertical suscept
-ggplot(data = vert.suscept) +
-  geom_bar(aes(x = channeltype2, y = count, fill = factor(vert.rating)), stat = "identity", position = position_fill(reverse = TRUE)) +
-  ggtitle("Vertical Susceptibility, most recent survey") +
-  guides(fill = guide_legend(reverse = TRUE)) +
-  #scale_fill_discrete(name = "Vertical Suscept.", labels = c("Low", "Medium", "High")) +
-  xlab("") + ylab("") +
-  scale_fill_manual(name = "Vertical Suscept.", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
-
-#lateral suscept
-ggplot(data = lat.suscept) +
-  geom_bar(aes(x = channeltype2, y = count, fill = factor(av.lat.rating)), stat = "identity", position = position_fill(reverse = TRUE)) +
-  ggtitle("Lateral Susceptibility, most recent survey") +
-  guides(fill = guide_legend(reverse = TRUE)) +
-  xlab("") + ylab("") +
-  scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-#Ordinal logistic regression: looking at all channel types
-lapply(sub[, c("area.SqMile",	"precip.Inch",	"valleyslope",	"valleywidth.Meter", "d50", "Q10", "vert.rating", "av.lat.rating")], table)
-
-## fit ordered logit model and store results 'm'
-m <- polr(factor(vert.rating) ~ area.SqMile +	precip.Inch +	valleyslope +	valleywidth.Meter + d50 + Q10 + channeltype2  , data = sub, Hess=TRUE)
-summary(m)
-
-
-
-# Logistic Regression GLM
-# where F is a binary factor and
-# x1-x3 are continuous predictors
-fit <- glm(factor(vert.rating) ~ area.SqMile +	precip.Inch +	valleyslope +	valleywidth.Meter + d50 + Q10 + channeltype2 , data = sub,family=binomial())
-summary(fit) # display results
-confint(fit) # 95% CI for the coefficients
-exp(coef(fit)) # exponentiated coefficients
-exp(confint(fit)) # 95% CI for exponentiated coefficients
-predict(fit, type="response") # predicted values
-residuals(fit, type="deviance") # residuals
-#for vertical rating --> D50 and precip.inch
-
-
-fit <- glm(factor(av.lat.rating) ~ area.SqMile +	precip.Inch +	valleyslope +	valleywidth.Meter + d50 + Q10 + channeltype2 , data = sub,family=binomial())
-summary(fit) # display results
-confint(fit) # 95% CI for the coefficients
-exp(coef(fit)) # exponentiated coefficients
-exp(confint(fit)) # 95% CI for exponentiated coefficients
-predict(fit, type="response") # predicted values
-residuals(fit, type="deviance") # residuals
-#for lateral rating --> only D50
-
-#subset natural, lateral
-natural <- sub[sub$channeltype=="Natural",]
-fit <- glm(factor(av.lat.rating) ~ area.SqMile +	precip.Inch +	valleyslope +	valleywidth.Meter + d50 + Q10  , data = natural,family=binomial())
-summary(fit) # display results
-
-fit <- glm(factor(av.lat.rating) ~ area.SqMile +	precip.Inch +	valleyslope +	valleywidth.Meter + d50 + Q10 +roaddens_1k, data = natural,family=binomial())
-summary(fit) # display results
-
-#subset natural, vertical
-fit <- glm(factor(vert.rating) ~ area.SqMile +	precip.Inch +	valleyslope +	valleywidth.Meter + d50 + Q10 +roaddens_1k , data = natural,family=binomial())
-summary(fit) # display results
 
 
 #boxplots
