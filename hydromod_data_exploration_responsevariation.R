@@ -110,8 +110,16 @@ vert.lu.channeltype4<- data.frame(vert.lu.channeltype4[vert.lu.channeltype4$smc_
 #create new name for lu channeltype4
 vert.lu.channeltype4$vert.lu.ch4.names <- paste0(vert.lu.channeltype4$smc_lu, " ", vert.lu.channeltype4$channeltype4)
 vert.lu.channeltype4$vert.lu.ch4.names <- gsub("Agricultural", "Ag", vert.lu.channeltype4$vert.lu.ch4.names)
+#sum of sites in categories
+total.vert <- sum(vert.lu.channeltype4$count)
+total.vert.eng <- 11+3+53
+#engineered, agriculture summary by channel type3
+vert.lu.channeltype4.ag.eng <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype4','vert.rating','channeltype3')], length))
+pct.ag.eng.softbottom <- 7/11
+
+
   
-#vertical by land use channel type *** use this for bar plots
+#lateral by land use channel type *** use this for bar plots
 #land use and channel type 4
 lat.lu.channeltype4 <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype4','av.lat.rating')], length))
 lat.lu.channeltype4$count <- lat.lu.channeltype4$SiteYear
@@ -188,6 +196,10 @@ ind.unk <- grep("Unk", sub$channeltype3.vert)
 sub2.vert <- data.frame(sub[-c(ind.NA, ind.highhardsides, ind.medhardsides,ind.unk),])
 #create order of the categories for boxplots
 sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Earthen","Medium Earthen","High Earthen"))
+#summary of median values for each suscept/channel type category
+sub2.vert$csci <- as.numeric(sub2.vert$csci)
+sub2.vert.median <- data.frame(aggregate(sub2.vert, by = sub2.vert[c('channeltype3.vert')], FUN=mean))
+
 
 
 # create new column for Channel type3 and lateral suscept
@@ -251,6 +263,12 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.highhardsides.lat, ind.med
     scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   cl
   
+  #summary median values in boxplots
+  vert.csci.med <- aggregate(csci ~  channeltype3.vert, sub2.vert, median)
+  lat.csci.med <- aggregate(csci ~  channeltype3.lat, sub2.lat, median)
+  vert.csci.length <- aggregate(csci ~  channeltype3.vert, sub2.vert, length)
+  lat.csci.length <- aggregate(csci ~  channeltype3.lat, sub2.lat, length)
+  
 #Boxplots ASCI
   
 #annotate total number of sites in each bin/category
@@ -289,7 +307,11 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.highhardsides.lat, ind.med
     scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   al
   
-
+  
+  #summary median values in boxplots
+  vert.asci.med <- aggregate(ASCI.hybrid ~  channeltype3.vert, sub2.vert, median)
+  lat.asci.med <- aggregate(ASCI.hybrid ~  channeltype3.lat, sub2.lat, length)
+  
   
   
     
