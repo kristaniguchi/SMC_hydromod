@@ -62,14 +62,14 @@ sub$channeltype2 <- channeltype2
 
 #Also put natural and soft all into one category: Natural/Soft All for channeltype3
 sub$channeltype3 <- channeltype2
-sub$channeltype3[sub$channeltype3=="Soft Entire"] <- "Natural/Soft Entire"
-sub$channeltype3[sub$channeltype3=="Natural"] <- "Natural/Soft Entire"
+sub$channeltype3[sub$channeltype3=="Soft Entire"] <- "Natural & Earthen Engineered"
+sub$channeltype3[sub$channeltype3=="Natural"] <- "Natural & Earthen Engineered"
 
 #Also create coarser category based on earthen vs. engineered
 sub$channeltype4 <- sub$channeltype3
-sub$channeltype4[sub$channeltype4=="Natural/Soft Entire"] <- "Earthen"
-sub$channeltype4[sub$channeltype4=="Hardened Side(s)"] <- "Engineered"
-sub$channeltype4[sub$channeltype4=="Hardened Entire"] <- "Engineered"
+#sub$channeltype4[sub$channeltype4=="Natural & Earthen Engineered"] <- "Natural & Earthhen Engineered"
+sub$channeltype4[sub$channeltype4=="Hardened Side(s)"] <- "Hardened Engineered"
+sub$channeltype4[sub$channeltype4=="Hardened Entire"] <- "Hardened Engineered"
 
 
 
@@ -99,7 +99,7 @@ lu.channeltype4$count <- lu.channeltype4$SiteYear
 #exlcude SMC_out land use
 lu.channeltype4<- lu.channeltype4[lu.channeltype4$smc_lu != "SMC_out",]
   #create new name for lu channeltype4
-lu.channeltype4$lu.ch4.names <- c("Ag Earthen", "Ag Engineered", "Open Earthen", "Open Engineered", "Urban Earthen", "Urban Engineered")
+lu.channeltype4$lu.ch4.names <- c("Ag Natural/Earthen", "Ag Hardened Engineered", "Open Natural/Earthen", "Open Hardened Engineered", "Urban Natural/Earthen", "Urban Hardened Engineered")
 
 #vertical by land use channel type *** use this for bar plots
 #land use and channel type 4
@@ -149,7 +149,12 @@ lat.lu.channeltype4$count <- as.numeric(lat.lu.channeltype4$count)
 #annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
 anno <- data.frame(xstar = c(1,2,3,1,2,3), ystar = rep(0, 6),
                    lab = c("(71)", "(36)","(31)","(3)","(11)","(53)"),
-                   channeltype4 = c("Earthen", "Earthen","Earthen","Engineered","Engineered","Engineered"))
+                   channeltype4 = c("Natural & Earthen Engineered", "Natural & Earthen Engineered","Natural & Earthen Engineered","Hardened Engineered","Hardened Engineered","Hardened Engineered"))
+#set levels for channel type4
+anno$channeltype4 <- factor(anno$channeltype4, levels=c("Natural & Earthen Engineered", "Hardened Engineered"))
+vert.lu.channeltype4$channeltype4 <- factor(vert.lu.channeltype4$channeltype4, levels=c("Natural & Earthen Engineered", "Hardened Engineered"))
+lat.lu.channeltype4$channeltype4 <- factor(lat.lu.channeltype4$channeltype4, levels=c("Natural & Earthen Engineered", "Hardened Engineered"))
+
 
 #vertical suscept
 ggplot(data = vert.lu.channeltype4) +
@@ -159,7 +164,7 @@ ggplot(data = vert.lu.channeltype4) +
   facet_wrap(~channeltype4) +
   xlab("") + ylab("Proportion of Sites") +
   geom_text(data = anno, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
-  scale_fill_manual(name = "Vertical Suscept.", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
+  scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
 
 #lateral suscept
 ggplot(data = lat.lu.channeltype4) +
@@ -169,7 +174,7 @@ ggplot(data = lat.lu.channeltype4) +
   facet_wrap(~channeltype4) +
   xlab("") + ylab("Proportion of Sites") +  
   geom_text(data = anno, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
-  scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
+  scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
 
 ######################
 ###Boxplots: CSCI and ASCI vs. Lateral and Vertical Susceptibility
