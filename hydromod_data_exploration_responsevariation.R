@@ -189,7 +189,7 @@ lat.suscept.2 <- data.frame(aggregate(sub, by = sub[c('channeltype3','av.lat.rat
   lat.suscept.2$count <- lat.suscept.2$SiteYear
 # create new column for Channel type3 and vert/lat suscept
 sub$channeltype3.vert <- paste0(sub$VertSuscept, " ",sub$channeltype3 )
-sub$channeltype3.vert <- gsub("Natural/Soft Entire", "Earthen", sub$channeltype3.vert )
+sub$channeltype3.vert <- gsub("Natural & Earthen Engineered", "Natural Earthen", sub$channeltype3.vert )
 sub$channeltype3.vert <- gsub("LOW", "Low", sub$channeltype3.vert )
 sub$channeltype3.vert <- gsub("MEDIUM", "Medium", sub$channeltype3.vert )
 # Exclude NA channel type and medium/high hardened sides(s), Unk
@@ -198,18 +198,28 @@ ind.NA <- which(is.na(sub$channeltype3))
 ind.highhardsides <- grep('High Hardened Side', as.character(sub$channeltype3.vert))
 ind.medhardsides <- grep("Medium Hardened Side", sub$channeltype3.vert)
 ind.unk <- grep("Unk", sub$channeltype3.vert)
-sub2.vert <- data.frame(sub[-c(ind.NA, ind.highhardsides, ind.medhardsides,ind.unk),])
+#subset sub2.vert
+sub2.vert <- data.frame(sub[-c(ind.NA, ind.unk),])
+#sub2.vert <- data.frame(sub[-c(ind.NA, ind.highhardsides, ind.medhardsides, ind.unk),])
+
 #create order of the categories for boxplots
-sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Earthen","Medium Earthen","High Earthen"))
+#sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Natural Earthen","Medium Natural Earthen","High Natural Earthen"))
+###update this with the high hardened and med hardened sides category
+sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Natural Earthen","Medium Natural Earthen","Medium Hardened Side(s)", "High Natural Earthen", "High Hardened Side(s)"))
+#sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Medium Hardened Side(s)", "High Hardened Side(s)", "Low Natural Earthen","Medium Natural Earthen", "High Natural Earthen"))
+#update this to get line breaks 
+levels(sub2.vert$channeltype3.vert) <- gsub(" ", "\n", levels(sub2.vert$channeltype3.vert))
+
+
 #summary of median values for each suscept/channel type category
 sub2.vert$csci <- as.numeric(sub2.vert$csci)
 sub2.vert.median <- data.frame(aggregate(sub2.vert, by = sub2.vert[c('channeltype3.vert')], FUN=mean))
-
+unique(sub2.vert$channeltype3.vert )
 
 
 # create new column for Channel type3 and lateral suscept
 sub$channeltype3.lat <- paste0(sub$AverageLatSuscept, " ",sub$channeltype3 )
-sub$channeltype3.lat <- gsub("Natural/Soft Entire", "Earthen", sub$channeltype3.lat )
+sub$channeltype3.lat <- gsub("Natural & Earthen Engineered", "Natural Earthen", sub$channeltype3.lat )
 sub$channeltype3.lat <- gsub("LOW", "Low", sub$channeltype3.lat )
 sub$channeltype3.lat <- gsub("MEDIUM", "Medium", sub$channeltype3.lat )
 sub$channeltype3.lat <- gsub("HIGH", "High", sub$channeltype3.lat )
@@ -222,10 +232,14 @@ ind.NA.lat <- which(is.na(sub$AverageLatSuscept))
 ind.highhardsides.lat <- grep('High Hardened Side', as.character(sub$channeltype3.lat))
 ind.medhardsides.lat <- grep("Medium Hardened Side", sub$channeltype3.lat)
 ind.unk.lat <- grep("Unk", sub$channeltype3.lat)
-sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.highhardsides.lat, ind.medhardsides.lat,ind.unk.lat),])
+#sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.highhardsides.lat, ind.medhardsides.lat, ind.unk.lat),])
+sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   unique(sub2.lat$channeltype3.lat)
 #create order of the categories for boxplots
-  sub2.lat$channeltype3.lat <- factor(sub2.lat$channeltype3.lat, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Earthen","Medium Earthen","High Earthen","Very High Earthen"))
+  #sub2.lat$channeltype3.lat <- factor(sub2.lat$channeltype3.lat, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Natural/Earthen","Medium Natural/Earthen","High Natural/Earthen","Very High Natural/Earthen"))
+  sub2.lat$channeltype3.lat <- factor(sub2.lat$channeltype3.lat, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Natural Earthen","Medium Natural Earthen","Medium Hardened Side(s)","High Natural Earthen","High Hardened Side(s)","Very High Natural Earthen", "Very High Hardened Side(s)"))
+  #update this to get line breaks 
+  levels(sub2.lat$channeltype3.lat) <- gsub(" ", "\n", levels(sub2.lat$channeltype3.lat))
   
 #Boxplots CSCI
   
@@ -238,7 +252,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.highhardsides.lat, ind.med
   vert.channeltype3 <- data.frame(aggregate(sub2.csci.vert, by = sub2.csci.vert[c('channeltype3.vert')], length))
   vert.channeltype3$count <- vert.channeltype3$SiteYear
 #annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
-  anno.vert.csci <- data.frame(xstar = c(1:5), ystar = rep(0, 5),
+  anno.vert.csci <- data.frame(xstar = c(1:7), ystar = rep(0, 7),
                               lab = paste0("(",vert.channeltype3$count,")"))
   
 #lat.csci site counts for each category
@@ -254,18 +268,18 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.highhardsides.lat, ind.med
   
   
   #CSCI vertical
-  cv <- ggplot(sub2.vert, aes(x=channeltype3.vert, y=csci, fill= factor(vert.rating))) + 
+  cv <- ggplot(sub2.csci.vert, aes(x=channeltype3.vert, y=csci, fill= factor(vert.rating))) + 
     geom_boxplot()  + xlab("") + ylab("CSCI Score") +
     ggtitle("CSCI vs. Vertical Susceptibility") + 
     #geom_text(data = anno.vert.csci, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
-    scale_fill_manual(name = "Vertical Suscept.", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
+    scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
   cv
 
   #CSCI lateral
-  cl <- ggplot(sub2.lat, aes(x=channeltype3.lat, y=csci, fill= factor(av.lat.rating))) + 
+  cl <- ggplot(sub2.csci.lat, aes(x=channeltype3.lat, y=csci, fill= factor(av.lat.rating))) + 
     geom_boxplot()  + xlab("") + ylab("CSCI Score") +
     ggtitle("CSCI vs. Lateral Susceptibility") +
-    scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
+    scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   cl
   
   #summary median values in boxplots
@@ -299,7 +313,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.highhardsides.lat, ind.med
                               lab = c(lat.channeltype3.asci$count))
   
   #ASCI vertical boxplots
-  av <- ggplot(sub2.vert, aes(x=channeltype3.vert, y=ASCI.hybrid, fill= factor(vert.rating))) + 
+  av <- ggplot(sub2.asci.vert, aes(x=channeltype3.vert, y=ASCI.hybrid, fill= factor(vert.rating))) + 
     geom_boxplot()  + xlab("") + ylab("ASCI Score") +
     ggtitle("ASCI vs. Vertical Susceptibility") +
     scale_fill_manual(name = "Vertical Suscept.", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
@@ -320,12 +334,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.highhardsides.lat, ind.med
   
   
     
-  plot <- ggplot(data = data.frame(x = sub.obs[,l], y=sub.pred[,l], timeframe = label.years)) + 
-    geom_point(mapping = aes(x = x, y = y, col=timeframe, size=.5)) +
-    labs(x = x.name, y= y.name, subtitle = gage.name, title = title) + 
-    scale_size(guide=FALSE) + theme(legend.title = element_blank(), legend.position = "bottom", legend.text= element_text(size=10)) +
-    guides(colour=guide_legend(override.aes = list(size = 4))) + geom_abline()
-  
+########BOXPLOTS WITH NATURAL CHANNEL SUBSET OUT
   
   
   
