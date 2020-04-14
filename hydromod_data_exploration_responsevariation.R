@@ -320,7 +320,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   av
   
   #ASCI lateral boxplots
-  al <- ggplot(sub2.lat, aes(x=channeltype3.lat, y=ASCI.hybrid, fill= factor(av.lat.rating))) + 
+  al <- ggplot(sub2.asci.lat, aes(x=channeltype3.lat, y=ASCI.hybrid, fill= factor(av.lat.rating))) + 
     geom_boxplot()  + xlab("") + ylab("ASCI Score") +
     ggtitle("Lateral Susceptibility, ASCI") +
     scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
@@ -420,7 +420,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   vert.channeltype3 <- data.frame(aggregate(sub2.csci.vert, by = sub2.csci.vert[c('channeltype3.vert')], length))
   vert.channeltype3$count <- vert.channeltype3$SiteYear
   #annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
-  anno.vert.csci <- data.frame(xstar = c(1:7), ystar = rep(0, 7),
+  anno.vert.csci <- data.frame(xstar = c(1:8), ystar = rep(0, 8),
                                lab = paste0("(",vert.channeltype3$count,")"))
   
   #lat.csci site counts for each category
@@ -451,10 +451,10 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   cl
   
   #summary median values in boxplots
-  vert.csci.med <- aggregate(csci ~  channeltype3.vert, sub2.vert, median)
-  lat.csci.med <- aggregate(csci ~  channeltype3.lat, sub2.lat, median)
-  vert.csci.length <- aggregate(csci ~  channeltype3.vert, sub2.vert, length)
-  lat.csci.length <- aggregate(csci ~  channeltype3.lat, sub2.lat, length)
+  vert.csci.med <- aggregate(csci ~  channeltype3.vert, sub2.csci.vert, median)
+  lat.csci.med <- aggregate(csci ~  channeltype3.lat, sub2.csci.lat, median)
+  vert.csci.length <- aggregate(csci ~  channeltype3.vert, sub2.csci.vert, length)
+  lat.csci.length <- aggregate(csci ~  channeltype3.lat, sub2.csci.lat, length)
   
   #Boxplots ASCI
   
@@ -502,8 +502,10 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   
   
   #summary median values in boxplots
-  vert.asci.med <- aggregate(ASCI.hybrid ~  channeltype3.vert, sub2.vert, median)
-  lat.asci.med <- aggregate(ASCI.hybrid ~  channeltype3.lat, sub2.lat, length)
+  vert.asci.med <- aggregate(ASCI.hybrid ~  channeltype3.vert, sub2.asci.vert, median)
+  lat.asci.med <- aggregate(ASCI.hybrid ~  channeltype3.lat, sub2.asci.lat, median)
+  vert.asci.length <- aggregate(ASCI.hybrid ~  channeltype3.vert, sub2.asci.vert, length)
+  lat.asci.length <- aggregate(ASCI.hybrid ~  channeltype3.lat, sub2.asci.lat, length)
   
   
   
