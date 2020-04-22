@@ -6,6 +6,7 @@
 #install.packages("plyr")
 #install.packages("scales")
 #install.packages("MASS")
+install.packages("ggpubr")
 
 library(dplyr)
 library(ggplot2)
@@ -14,6 +15,7 @@ library(extrafont)
 library(plyr)
 library(scales)
 library(MASS)
+library(ggpubr)
 
 #directory
 dir <- "C:/Users/KristineT.SCCWRP2K/Documents/Git/SMC_hydromod/data/"
@@ -71,8 +73,8 @@ sub$channeltype3[sub$channeltype3=="Natural"] <- "Natural & Earthen Engineered"
 #Also create coarser category based on earthen vs. engineered
 sub$channeltype4 <- sub$channeltype3
 #sub$channeltype4[sub$channeltype4=="Natural & Earthen Engineered"] <- "Natural & Earthhen Engineered"
-sub$channeltype4[sub$channeltype4=="Hardened Side(s)"] <- "Hardened Engineered"
-sub$channeltype4[sub$channeltype4=="Hardened Entire"] <- "Hardened Engineered"
+sub$channeltype4[sub$channeltype4=="Hardened Side(s)"] <- "Hardened Engineered (Fully & Partially)"
+sub$channeltype4[sub$channeltype4=="Hardened Entire"] <- "Hardened Engineered (Fully & Partially)"
 
 
 
@@ -102,7 +104,7 @@ lu.channeltype4$count <- lu.channeltype4$SiteYear
 #exlcude SMC_out land use
 lu.channeltype4<- lu.channeltype4[lu.channeltype4$smc_lu != "SMC_out",]
   #create new name for lu channeltype4
-lu.channeltype4$lu.ch4.names <- c("Ag Natural/Earthen", "Ag Hardened Engineered", "Open Natural/Earthen", "Open Hardened Engineered", "Urban Natural/Earthen", "Urban Hardened Engineered")
+lu.channeltype4$lu.ch4.names <- c("Ag Natural/Earthen", "AgFully and Partially Hardened Engineered", "Open Natural/Earthen", "OpenFully and Partially Hardened Engineered", "Urban Natural/Earthen", "UrbanFully and Partially Hardened Engineered")
 
 #vertical by land use channel type *** use this for bar plots
 #land use and channel type 4
@@ -152,16 +154,16 @@ lat.lu.channeltype4$count <- as.numeric(lat.lu.channeltype4$count)
 #annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
 anno <- data.frame(xstar = c(1,2,3,1,2,3), ystar = rep(0, 6),
                    lab = c("(71)", "(36)","(31)","(3)","(11)","(53)"),
-                   channeltype4 = c("Natural & Earthen Engineered", "Natural & Earthen Engineered","Natural & Earthen Engineered","Hardened Engineered","Hardened Engineered","Hardened Engineered"))
+                   channeltype4 = c("Natural & Earthen Engineered", "Natural & Earthen Engineered","Natural & Earthen Engineered","Hardened Engineered (Fully & Partially)","Hardened Engineered (Fully & Partially)","Hardened Engineered (Fully & Partially)"))
 #set levels for channel type4
-anno$channeltype4 <- factor(anno$channeltype4, levels=c("Natural & Earthen Engineered", "Hardened Engineered"))
-vert.lu.channeltype4$channeltype4 <- factor(vert.lu.channeltype4$channeltype4, levels=c("Natural & Earthen Engineered", "Hardened Engineered"))
-lat.lu.channeltype4$channeltype4 <- factor(lat.lu.channeltype4$channeltype4, levels=c("Natural & Earthen Engineered", "Hardened Engineered"))
+anno$channeltype4 <- factor(anno$channeltype4, levels=c("Natural & Earthen Engineered", "Hardened Engineered (Fully & Partially)"))
+vert.lu.channeltype4$channeltype4 <- factor(vert.lu.channeltype4$channeltype4, levels=c("Natural & Earthen Engineered", "Hardened Engineered (Fully & Partially)"))
+lat.lu.channeltype4$channeltype4 <- factor(lat.lu.channeltype4$channeltype4, levels=c("Natural & Earthen Engineered", "Hardened Engineered (Fully & Partially)"))
 
 
 #vertical suscept
 ggplot(data = vert.lu.channeltype4) +
-  geom_bar(aes(x = smc_lu, y = count, fill = factor(vert.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
+  geom_bar(color="black", aes(x = smc_lu, y = count, fill = factor(vert.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
   ggtitle("Vertical Susceptibility") +
   guides(fill = guide_legend(reverse = TRUE)) +
   facet_wrap(~channeltype4) +
@@ -171,13 +173,105 @@ ggplot(data = vert.lu.channeltype4) +
 
 #lateral suscept
 ggplot(data = lat.lu.channeltype4) +
-  geom_bar(aes(x = smc_lu, y = count, fill = factor(av.lat.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
+  geom_bar(color="black", aes(x = smc_lu, y = count, fill = factor(av.lat.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
   ggtitle("Lateral Susceptibility") +
   guides(fill = guide_legend(reverse = TRUE)) +
   facet_wrap(~channeltype4) +
   xlab("") + ylab("Proportion of Sites") +  
   geom_text(data = anno, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
   scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
+
+
+###############
+#Revision to barplots in natural vs. earthen category (channel type)
+
+#vertical by land use channel type 
+#land use and channel type
+sub$channeltype <- factor(sub$channeltype, levels = c("Natural", "Engineered"))
+vert.lu.channeltype <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype','vert.rating')], length))
+vert.lu.channeltype$count <- vert.lu.channeltype$SiteYear
+#exlcude SMC_out land use
+vert.lu.channeltype<- data.frame(vert.lu.channeltype[vert.lu.channeltype$smc_lu != "SMC_out",])
+#create new name for lu channeltype
+vert.lu.channeltype$vert.lu.ch4.names <- paste0(vert.lu.channeltype$smc_lu, " ", vert.lu.channeltype$channeltype)
+vert.lu.channeltype$vert.lu.ch4.names <- gsub("Agricultural", "Ag", vert.lu.channeltype$vert.lu.ch4.names)
+#sum of sites in categories
+total.vert <- sum(vert.lu.channeltype$count)
+total.vert.eng <- 11+3+53
+#engineered, agriculture summary by channel type3
+vert.lu.channeltype.ag.eng <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype','vert.rating','channeltype3')], length))
+pct.ag.eng.softbottom <- 7/11
+
+#lateral by land use channel type 
+#land use and channel type
+lat.lu.channeltype <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype','av.lat.rating')], length))
+lat.lu.channeltype$count <- lat.lu.channeltype$SiteYear
+#exlcude SMC_out land use
+lat.lu.channeltype<- data.frame(lat.lu.channeltype[lat.lu.channeltype$smc_lu != "SMC_out",])
+#create new name for lu channeltype
+lat.lu.channeltype$lat.lu.ch4.names <- paste0(lat.lu.channeltype$smc_lu, " ", lat.lu.channeltype$channeltype)
+lat.lu.channeltype$lat.lu.ch4.names <- gsub("Agricultural", "Ag", lat.lu.channeltype$lat.lu.ch4.names)
+
+#count in each lu.channeltype category
+name.lu.chtype <- lat.lu.channeltype$lat.lu.ch4.names
+count.lu.chtype <- lat.lu.channeltype$count
+lu.channeltype.count.df <- data.frame(cbind(name.lu.chtype, count.lu.chtype))
+
+#count of total natural 
+total.natural <- 71+31+28
+total.engineered <- 3+16+56
+lat.nat.h.vhigh <- 9+7+9+10+9+11
+prop.lat.nat.h.vh <- lat.nat.h.vhigh/total.natural
+vert.nat.h <- 15+22+19
+prop.vert.h <- vert.nat.h/total.natural
+
+#bar plot positions
+#reorder positions of lu
+vert.lu.channeltype$smc_lu <- factor(vert.lu.channeltype$smc_lu, levels= c("Open","Agricultural","Urban"))
+lat.lu.channeltype$smc_lu <- factor(lat.lu.channeltype$smc_lu, levels= c("Open","Agricultural","Urban"))
+
+#make sure count is numeric
+vert.lu.channeltype$count <- as.numeric(vert.lu.channeltype$count)
+lat.lu.channeltype$count <- as.numeric(lat.lu.channeltype$count)
+
+#overall counts in each of 6 categories
+#set factor levels for land use
+sub$smc_lu <- factor(sub$smc_lu, levels=c("Open", "Agricultural","Urban","SMC_out"))
+lat.lu.channeltype.overall <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype')], length))
+ind.smcout <- grep("SMC_out", lat.lu.channeltype.overall$smc_lu)
+lat.lu.channeltype.overall <- lat.lu.channeltype.overall[-ind.smcout,]
+
+#annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
+anno2 <- data.frame(xstar = c(1,2,3,1,2,3), ystar = rep(0, 6),
+                   lab = c("(71)", "(31)","(28)","(3)","(16)","(56)"),
+                   channeltype = c("Natural", "Natural","Natural","Engineered","Engineered","Engineered"))
+#set levels for channel type
+anno2$channeltype <- factor(anno2$channeltype, levels=c("Natural", "Engineered"))
+
+
+
+#vertical suscept
+ggplot(data = vert.lu.channeltype) +
+  geom_bar(color="black", aes(x = smc_lu, y = count, fill = factor(vert.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
+  ggtitle("Vertical Susceptibility") +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  facet_wrap(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free") +
+  xlab("") + ylab("Proportion of Sites") +
+  geom_text(data = anno2, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
+  scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
+
+#lateral suscept
+ggplot(data = lat.lu.channeltype) +
+  geom_bar(color="black", aes(x = smc_lu, y = count, fill = factor(av.lat.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
+  ggtitle("Lateral Susceptibility") +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  facet_wrap(~channeltype) +
+  xlab("") + ylab("Proportion of Sites") +  
+  geom_text(data = anno2, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
+  scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
+
+
+
 
 ######################
 ###Boxplots: CSCI and ASCI vs. Lateral and Vertical Susceptibility
@@ -527,8 +621,8 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     geom_boxplot()  + xlab("") + ylab("ASCI Score") +
     facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
     theme(legend.position="bottom") +
-    geom_hline(yintercept=0.79, linetype="dashed", color = "black") +
-    geom_text(aes(0,0.79, label=0.79, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
+    geom_hline(yintercept=0.88, linetype="dashed", color = "black") +
+    geom_text(aes(0,0.88, label=0.88, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
     ggtitle("ASCI vs. Vertical Susceptibility") +
     scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
   av
@@ -538,12 +632,12 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     geom_boxplot()  + xlab("") + ylab("ASCI Score") +
     facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
     theme(legend.position="bottom") +
-    geom_hline(yintercept=0.79, linetype="dashed", color = "black") +
-    geom_text(aes(0,0.79, label=0.79, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
+    geom_hline(yintercept=0.88, linetype="dashed", color = "black") +
+    geom_text(aes(0,0.88, label=0.88, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
     ggtitle("Lateral Susceptibility, ASCI") +
     scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   al
-  
+
   
   #summary median values in boxplots
   vert.asci.med <- aggregate(ASCI.hybrid ~  channeltype3.vert, sub2.asci.vert, median)
@@ -552,9 +646,40 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   lat.asci.length <- aggregate(ASCI.hybrid ~  channeltype3.lat, sub2.asci.lat, length)
   
   
+#test sig diff between natural low/med vs. high
+  #subset of natural only
+  sub.nat <- sub2.asci.vert[sub2.asci.vert$channeltype == "Natural",]
+  sub.nat$vert.combine <- sub.nat$channeltype3.vert
+  sub.nat$vert.combine <- gsub("Low\nNatural", "Low.Medium", sub.nat$vert.combine)
+  sub.nat$vert.combine <- gsub("Medium\nNatural", "Low.Medium", sub.nat$vert.combine)
   
+  p <- ggplot(sub.nat, aes(x = vert.combine, y = ASCI.hybrid)) + geom_boxplot() + stat_compare_means(method = "t.test")
+  
+  #test sig diff between natural low/med vs. high/very high CSCI lateral categores
+  #subset of natural only
+  sub.nat.csci.lat <- sub2.csci.lat[sub2.csci.lat$channeltype == "Natural",]
+  sub.nat.csci.lat$lat.combine <- sub.nat.csci.lat$channeltype3.lat
+  sub.nat.csci.lat$lat.combine <- gsub("Low\nNatural", "Low.Medium", sub.nat.csci.lat$lat.combine)
+  sub.nat.csci.lat$lat.combine <- gsub("Medium\nNatural", "Low.Medium", sub.nat.csci.lat$lat.combine)
+  sub.nat.csci.lat$lat.combine <- gsub("Very\nHigh\nNatural", "High.VHigh", sub.nat.csci.lat$lat.combine, fixed=TRUE)
+  sub.nat.csci.lat$lat.combine <- gsub("High\nNatural", "High.VHigh", sub.nat.csci.lat$lat.combine, fixed=TRUE)
+  
+  p <- ggplot(sub.nat.csci.lat, aes(x = lat.combine, y = csci)) + geom_boxplot() + stat_compare_means(method = "t.test")
+  
+  
+  sub9 <- sub2.asci.vert[sub2.asci.vert$channeltype3.vert == "Low\nHardened\nSide(s)",]
+  
+  #  Add p-value
+  p + stat_compare_means()
+  
+  # Change method
+  p + stat_compare_means(method = "t.test")
+  
+  
+  fname <- paste0("P:/KrisTaniguchi/Hydromod_SMC/Data/", "sub2.asci.vert.csv")
+   write.csv(sub2.asci.vert, fname, row.names=FALSE)
 
-  
+  sub9 <- sub2.asci.vert[sub2.asci.vert$channeltype3.vert == "Low\nHardened\nSide(s)",]
 
 
 
