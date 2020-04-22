@@ -431,17 +431,6 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   anno.vert.csci <- data.frame(xstar = c(1:8), ystar = rep(0, 8),
                                lab = paste0("(",vert.channeltype3$count,")"))
   
-  #lat.csci site counts for each category
-  #omit all sites that do not have CSCI values
-  ind.NA.csci.lat <- which(is.na(sub2.lat$csci))
-  sub2.csci.lat <- data.frame(sub2.lat[-ind.NA.csci.lat,])
-  #lat channel type 3
-  lat.channeltype3 <- data.frame(aggregate(sub2.csci.lat, by = sub2.csci.lat[c('channeltype3.lat')], length))
-  lat.channeltype3$count <- lat.channeltype3$SiteYear
-  #annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
-  anno.lat.csci <- data.frame(xstar = c(1:6), ystar = rep(0, 6),
-                              lab = paste0("(",lat.channeltype3$count,")"))
-
   
   #CSCI vertical
   cv <- ggplot(sub2.csci.vert, aes(x=channeltype3.vert, y=csci, fill= factor(vert.rating))) + 
@@ -456,13 +445,29 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   cv
   
    #CSCI lateral
-  
+  #set levels for channeltype3.lat
   levels(sub2.csci.lat$channeltype3.lat)
   new.levels<- c("Low\nNatural","Medium\nNatural","High\nNatural","Very\nHigh\nNatural",
                  "Low\nHardened\nEntire","Low\nHardened\nSide(s)","Medium\nHardened\nSide(s)","High\nHardened\nSide(s)","Very\nHigh\nHardened\nSide(s)",
                  "High\nEarthen\nEngineered",
                  "Very\nHigh\nEarthen\nEngineered")
   sub2.csci.lat$channeltype3.lat <- factor(sub2.csci.lat$channeltype3.lat, levels=new.levels)
+  #lat.csci site counts for each category
+  #omit all sites that do not have CSCI values
+  ind.NA.csci.lat <- which(is.na(sub2.lat$csci))
+  sub2.csci.lat <- data.frame(sub2.lat[-ind.NA.csci.lat,])
+  #lat channel type 3
+  lat.channeltype3 <- data.frame(aggregate(sub2.csci.lat, by = sub2.csci.lat[c('channeltype3.lat')], length))
+  lat.channeltype3$count <- lat.channeltype3$SiteYear
+  
+  #summary of total number of sites in each bin
+  vert.csci.length <- aggregate(csci ~  channeltype3.vert, sub2.csci.vert, length)
+  lat.csci.length <- aggregate(csci ~  channeltype3.lat, sub2.csci.lat, length)
+  
+  #annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
+  anno.lat.csci <- data.frame(xstar = c(1:4,1:6), ystar = rep(0, 10),
+                              lab = paste0("(",lat.csci.length$csci,")"),
+                              channeltype3.lat = lat.csci.length$channeltype3.lat)
   
   
   cl <- ggplot(sub2.csci.lat, aes(x=channeltype3.lat, y=csci, fill= factor(av.lat.rating))) + 
@@ -472,6 +477,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     geom_hline(yintercept=0.79, linetype="dashed", color = "grey41") +
     geom_text(aes(0,0.79, label=0.79, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
     #scale_y_continuous(breaks=c(0.2, 0.4, 0.6, 0.79, 1)) +
+    #geom_text(data = anno.lat.csci, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
     ggtitle("CSCI vs. Lateral Susceptibility") +
     scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   cl
@@ -479,8 +485,6 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   #summary median values in boxplots
   vert.csci.med <- aggregate(csci ~  channeltype3.vert, sub2.csci.vert, median)
   lat.csci.med <- aggregate(csci ~  channeltype3.lat, sub2.csci.lat, median)
-  vert.csci.length <- aggregate(csci ~  channeltype3.vert, sub2.csci.vert, length)
-  lat.csci.length <- aggregate(csci ~  channeltype3.lat, sub2.csci.lat, length)
   
   #Boxplots ASCI
   
@@ -510,6 +514,12 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   levels<- levels(sub2.asci.lat$channeltype3.lat)
   new.levels <- c(levels[1:4],levels[6:7],levels[9:11])
   sub2.asci.lat$channeltype3.lat <- factor(sub2.asci.lat$channeltype3.lat, levels= new.levels)
+  #set levels for channeltype3.vert asci
+  levels(sub2.asci.vert$channeltype3.vert)
+  new.levels.asci.vert<- c("Low\nNatural","Medium\nNatural","High\nNatural",
+                 "Low\nHardened\nEntire","Low\nHardened\nSide(s)","Medium\nHardened\nSide(s)","High\nHardened\nSide(s)",
+                 "High\nEarthen\nEngineered")
+  sub2.asci.vert$channeltype3.vert <- factor(sub2.asci.vert$channeltype3.vert, levels=new.levels.asci.vert)
   
   
   #ASCI vertical boxplots
@@ -520,7 +530,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     geom_hline(yintercept=0.79, linetype="dashed", color = "black") +
     geom_text(aes(0,0.79, label=0.79, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
     ggtitle("ASCI vs. Vertical Susceptibility") +
-    scale_fill_manual(name = "Vertical Suscept.", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
+    scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
   av
   
   #ASCI lateral boxplots
@@ -531,7 +541,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     geom_hline(yintercept=0.79, linetype="dashed", color = "black") +
     geom_text(aes(0,0.79, label=0.79, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
     ggtitle("Lateral Susceptibility, ASCI") +
-    scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
+    scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   al
   
   
