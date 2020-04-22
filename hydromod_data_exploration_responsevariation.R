@@ -49,7 +49,7 @@ for(i in 1:length(sub$stationcode)){
   }else if(sub$bottom[i] == "Concrete" | sub$bottom[i] == "Grouted rock" | sub$bottom[i] == "Other"){
     channeltype2[i] <- "Hardened Entire"
   }else if((sub$bottom[i] == "Soft/Natural") & (sub$leftsideofstructure[i]  == "Earthen" | sub$leftsideofstructure[i]  == "Earthen bare" | sub$leftsideofstructure[i]  == "Vegetative/Natural") & (sub$rightsideofstructure[i]  == "Earthen" | sub$rightsideofstructure[i]  == "Earthen bare" | sub$rightsideofstructure[i]  == "Vegetative/Natural") ){
-    channeltype2[i] <- "Soft Entire"
+    channeltype2[i] <- "Earthen Engineered"
   }else if((sub$bottom[i] == "Soft/Natural") & (sub$leftsideofstructure[i]  == "Concrete" | sub$leftsideofstructure[i]  == "Grouted rock" | sub$leftsideofstructure[i]  == "Rock") | (sub$rightsideofstructure[i]  == "Concrete" | sub$rightsideofstructure[i]  == "Grouted rock" | sub$rightsideofstructure[i]  == "Rock") ){
       channeltype2[i] <- "Hardened Side(s)"
   }else{
@@ -57,12 +57,15 @@ for(i in 1:length(sub$stationcode)){
   }
 }
 
+
+
 #save new channel type vector into sub df
 sub$channeltype2 <- channeltype2
-
+#levels(sub$channeltype2) <- c("Natural", "Earthen Engineered","Hardened Side(s)", "Hardened Entire")
+#levels(sub$channeltype) <- c("Natural", "Engineered", "")
 #Also put natural and soft all into one category: Natural/Soft All for channeltype3
 sub$channeltype3 <- channeltype2
-sub$channeltype3[sub$channeltype3=="Soft Entire"] <- "Natural & Earthen Engineered"
+sub$channeltype3[sub$channeltype3=="Earthen Engineered"] <- "Natural & Earthen Engineered"
 sub$channeltype3[sub$channeltype3=="Natural"] <- "Natural & Earthen Engineered"
 
 #Also create coarser category based on earthen vs. engineered
@@ -338,6 +341,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   
   ######CSCI vs. lateral and vert suscept
   
+
   #subset data to exclude medium,high,veryhigh hardened
   #channel type 2 counts summary
   vert.suscept.2 <- data.frame(aggregate(sub, by = sub[c('channeltype3','vert.rating')], length))
@@ -351,7 +355,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   #for natural/earthen parse out natural from earthen engineered
   ind.natural <- grep("Natural", sub$channeltype2)
   sub$channeltype3.vert[ind.natural] <- gsub("Natural & Earthen Engineered", "Natural",   sub$channeltype3.vert[ind.natural])
-  ind.earthen <- grep("Soft Entire", sub$channeltype2)
+  ind.earthen <- grep("Earthen Engineered", sub$channeltype2)
   sub$channeltype3.vert[ind.earthen] <- gsub("Natural & Earthen Engineered", "Earthen Engineered",   sub$channeltype3.vert[ind.earthen])
 
   # Exclude NA channel type and medium/high hardened sides(s), Unk
@@ -368,7 +372,9 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   #create order of the categories for boxplots
   #sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Natural Earthen","Medium Natural Earthen","High Natural Earthen"))
   ###update this with the high hardened and med hardened sides category
-  sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Earthen Engineered","Low Natural","Medium Natural","Medium Hardened Side(s)", "High Natural", "High Earthen Engineered","High Hardened Side(s)"))
+  #sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Earthen Engineered","Low Natural","Medium Natural","Medium Hardened Side(s)", "High Natural", "High Earthen Engineered","High Hardened Side(s)"))
+  sub2.vert$channeltype3.vert <- factor(sub2.vert$channeltype3.vert, levels= c("Low Hardened Entire","Low Hardened Side(s)","Medium Hardened Side(s)","High Hardened Side(s)","Low Earthen Engineered","High Earthen Engineered", "Low Natural","Medium Natural", "High Natural"))
+  
   #create new channeltype4.vert to sepearate out natural
   #update this to get line breaks 
   levels(sub2.vert$channeltype3.vert) <- gsub(" ", "\n", levels(sub2.vert$channeltype3.vert))
@@ -389,7 +395,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   #for natural/earthen parse out natural from earthen engineered
   ind.natural <- grep("Natural", sub$channeltype2)
   sub$channeltype3.lat[ind.natural] <- gsub("Natural & Earthen Engineered", "Natural",   sub$channeltype3.lat[ind.natural])
-  ind.earthen <- grep("Soft Entire", sub$channeltype2)
+  ind.earthen <- grep("Earthen Engineered", sub$channeltype2)
   sub$channeltype3.lat[ind.earthen] <- gsub("Natural & Earthen Engineered", "Earthen Engineered",   sub$channeltype3.lat[ind.earthen])
   
   unique(sub$channeltype3.lat)
@@ -406,7 +412,9 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   #create order of the categories for boxplots
   #sub2.lat$channeltype3.lat <- factor(sub2.lat$channeltype3.lat, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Natural/Earthen","Medium Natural/Earthen","High Natural/Earthen","Very High Natural/Earthen"))
   sub2.lat$channeltype3.lat <- factor(sub2.lat$channeltype3.lat, levels= c("Low Hardened Entire","Low Hardened Side(s)","Low Natural","Medium Natural","Medium Hardened Side(s)","High Natural","High Earthen Engineered","High Hardened Side(s)","Very High Natural", "Very High Earthen Engineered","Very High Hardened Side(s)"))
-  #update this to get line breaks 
+  #sub2.lat$channeltype3.lat <- factor(sub2.lat$channeltype3.lat, levels= c("Low Hardened Entire","Low Hardened Side(s)","Medium Hardened Side(s)","High Hardened Side(s)","Low Natural","Medium Natural","High Natural","High Earthen Engineered","Very High Natural", "Very High Earthen Engineered","Very High Hardened Side(s)"))
+  
+    #update this to get line breaks 
   levels(sub2.lat$channeltype3.lat) <- gsub(" ", "\n", levels(sub2.lat$channeltype3.lat))
   
   #Boxplots CSCI
@@ -433,19 +441,37 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   #annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
   anno.lat.csci <- data.frame(xstar = c(1:6), ystar = rep(0, 6),
                               lab = paste0("(",lat.channeltype3$count,")"))
-  
+
   
   #CSCI vertical
   cv <- ggplot(sub2.csci.vert, aes(x=channeltype3.vert, y=csci, fill= factor(vert.rating))) + 
     geom_boxplot()  + xlab("") + ylab("CSCI Score") +
     ggtitle("CSCI vs. Vertical Susceptibility") + 
+    facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
+    theme(legend.position="bottom") +
+    geom_hline(yintercept=0.79, linetype="dashed", color = "black") +
+    geom_text(aes(0,0.79, label=0.79, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
     #geom_text(data = anno.vert.csci, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
     scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
   cv
   
-  #CSCI lateral
+   #CSCI lateral
+  
+  levels(sub2.csci.lat$channeltype3.lat)
+  new.levels<- c("Low\nNatural","Medium\nNatural","High\nNatural","Very\nHigh\nNatural",
+                 "Low\nHardened\nEntire","Low\nHardened\nSide(s)","Medium\nHardened\nSide(s)","High\nHardened\nSide(s)","Very\nHigh\nHardened\nSide(s)",
+                 "High\nEarthen\nEngineered",
+                 "Very\nHigh\nEarthen\nEngineered")
+  sub2.csci.lat$channeltype3.lat <- factor(sub2.csci.lat$channeltype3.lat, levels=new.levels)
+  
+  
   cl <- ggplot(sub2.csci.lat, aes(x=channeltype3.lat, y=csci, fill= factor(av.lat.rating))) + 
     geom_boxplot()  + xlab("") + ylab("CSCI Score") +
+    facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
+    theme(legend.position="bottom") +
+    geom_hline(yintercept=0.79, linetype="dashed", color = "grey41") +
+    geom_text(aes(0,0.79, label=0.79, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
+    #scale_y_continuous(breaks=c(0.2, 0.4, 0.6, 0.79, 1)) +
     ggtitle("CSCI vs. Lateral Susceptibility") +
     scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   cl
@@ -489,6 +515,10 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   #ASCI vertical boxplots
   av <- ggplot(sub2.asci.vert, aes(x=channeltype3.vert, y=ASCI.hybrid, fill= factor(vert.rating))) + 
     geom_boxplot()  + xlab("") + ylab("ASCI Score") +
+    facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
+    theme(legend.position="bottom") +
+    geom_hline(yintercept=0.79, linetype="dashed", color = "black") +
+    geom_text(aes(0,0.79, label=0.79, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
     ggtitle("ASCI vs. Vertical Susceptibility") +
     scale_fill_manual(name = "Vertical Suscept.", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
   av
@@ -496,6 +526,10 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   #ASCI lateral boxplots
   al <- ggplot(sub2.asci.lat, aes(x=channeltype3.lat, y=ASCI.hybrid, fill= factor(av.lat.rating))) + 
     geom_boxplot()  + xlab("") + ylab("ASCI Score") +
+    facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
+    theme(legend.position="bottom") +
+    geom_hline(yintercept=0.79, linetype="dashed", color = "black") +
+    geom_text(aes(0,0.79, label=0.79, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
     ggtitle("Lateral Susceptibility, ASCI") +
     scale_fill_manual(name = "Lateral Suscept.", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   al
