@@ -301,6 +301,37 @@ ggplot(data = merge.lat.lu.channeltype) +
   geom_text(data = anno3, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
   scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
 
+#What accounts for the low lat engineered ag?
+ag.eng.low <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmcout$smc_lu == "Agricultural" & sub.nosmcout$av.lat.rating == 1,]
+ag.eng.low$channeltype2 #half were partially hardened, half were fully hardened
+#what accounts for the low engineered urban? ANSW: 60% low engineered urban are fully hardened, 40% are partially
+urb.eng.low <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmcout$smc_lu == "Urban" & sub.nosmcout$av.lat.rating == 1,]
+urb.eng.low. <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmcout$smc_lu == "Urban" & sub.nosmcout$av.lat.rating == 1 & sub.nosmcout$channeltype2 == "Hardened Entire" ,]
+#overall
+eng.low <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered"  & sub.nosmcout$av.lat.rating == 1,]
+eng.low$channeltype2 #half were partially hardened, half were fully hardened
+length.eng.low.hardentire <- length(grep("Hardened Entire", eng.low$channeltype2))
+length.eng.low.hardenpart <- length(grep("Hardened Side", eng.low$channeltype2))
+length.eng.low.earthen <- length(grep("Earthen Engineered", eng.low$channeltype2))
+pct.eng.low.hardentire <- length.eng.low.hardentire/(length.eng.low.hardentire+length.eng.low.hardenpart+length.eng.low.earthen)
+pct.eng.low.hardenpart  <- length.eng.low.hardenpart/(length.eng.low.hardentire+length.eng.low.hardenpart+length.eng.low.earthen)
+pct.eng.low.earthen <- length.eng.low.earthen/(length.eng.low.hardentire+length.eng.low.hardenpart+length.eng.low.earthen)
+
+#What accounts for the low vert engineered ag?
+ag.eng.low <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmcout$smc_lu == "Agricultural" & sub.nosmcout$vert.rating == 1,]
+ag.eng.low$channeltype2 #half were partially hardened, half were fully hardened
+#what accounts for the low engineered urban? ANSW: 60% low engineered urban are fully hardened, 40% are partially
+urb.eng.low <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmcout$smc_lu == "Urban" & sub.nosmcout$av.lat.rating == 1,]
+urb.eng.low. <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmcout$smc_lu == "Urban" & sub.nosmcout$av.lat.rating == 1 & sub.nosmcout$channeltype2 == "Hardened Entire" ,]
+#overall
+eng.low <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered"  & sub.nosmcout$vert.rating == 1,]
+eng.low$channeltype2 #half were partially hardened, half were fully hardened
+length.eng.low.hardentire <- length(grep("Hardened Entire", eng.low$channeltype2))
+length.eng.low.hardenpart <- length(grep("Hardened Side", eng.low$channeltype2))
+length.eng.low.earthen <- length(grep("Earthen Engineered", eng.low$channeltype2))
+pct.eng.low.hardentire <- length.eng.low.hardentire/(length.eng.low.hardentire+length.eng.low.hardenpart+length.eng.low.earthen)
+pct.eng.low.hardenpart  <- length.eng.low.hardenpart/(length.eng.low.hardentire+length.eng.low.hardenpart+length.eng.low.earthen)
+pct.eng.low.earthen <- length.eng.low.earthen/(length.eng.low.hardentire+length.eng.low.hardenpart+length.eng.low.earthen)
 
 
 
