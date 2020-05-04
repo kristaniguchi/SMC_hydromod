@@ -649,12 +649,12 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   
   #ASCI vertical boxplots
   av <- ggplot(sub2.asci.vert, aes(x=channeltype3.vert, y=ASCI.hybrid, fill= factor(vert.rating))) + 
-    geom_boxplot()  + xlab("") + ylab("ASCI Score") +
+    geom_boxplot()  + xlab("") + ylab("ASCI Hybrid Score") +
     facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
     theme(legend.position="bottom") +
     geom_hline(yintercept=0.88, linetype="dashed", color = "black") +
     geom_text(aes(0,0.88, label=0.88, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
-    ggtitle("ASCI vs. Vertical Susceptibility") +
+    ggtitle("ASCI Hybrid vs. Vertical Susceptibility") +
     scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
   av
   
@@ -668,13 +668,36 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     ggtitle("Lateral Susceptibility, ASCI") +
     scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   al
-
   
-  #summary median values in boxplots
-  vert.asci.med <- aggregate(ASCI.hybrid ~  channeltype3.vert, sub2.asci.vert, median)
-  lat.asci.med <- aggregate(ASCI.hybrid ~  channeltype3.lat, sub2.asci.lat, median)
-  vert.asci.length <- aggregate(ASCI.hybrid ~  channeltype3.vert, sub2.asci.vert, length)
-  lat.asci.length <- aggregate(ASCI.hybrid ~  channeltype3.lat, sub2.asci.lat, length)
+  ##ADDITIONAL ASCI Plots to see if different when using softbodied, hybrid, diatoms
+  #ASCI vertical boxplots --> diatoms
+  avd <- ggplot(sub2.asci.vert, aes(x=channeltype3.vert, y=ASCI.diatoms, fill= factor(vert.rating))) + 
+    geom_boxplot()  + xlab("") + ylab("ASCI Diatoms Score") +
+    facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
+    theme(legend.position="bottom") +
+    geom_hline(yintercept=0.82, linetype="dashed", color = "black") +
+    geom_text(aes(0,0.82, label=0.82, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
+    ggtitle("ASCI Diatoms vs. Vertical Susceptibility") +
+    scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
+  avd
+  
+  #ASCI vertical boxplots --> soft bodied
+  avd <- ggplot(sub2.asci.vert, aes(x=channeltype3.vert, y=ASCI.sba, fill= factor(vert.rating))) + 
+    geom_boxplot()  + xlab("") + ylab("ASCI Soft-Bodied Score") +
+    facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
+    theme(legend.position="bottom") +
+    geom_hline(yintercept=0.80, linetype="dashed", color = "black") +
+    geom_text(aes(0,0.80, label=0.80, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
+    ggtitle("ASCI Soft-Bodied vs. Vertical Susceptibility") +
+    scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
+  avd
+  
+  
+  #summary median values in boxplots for diatoms and sba
+  vert.asci.med.sba <- aggregate(ASCI.sba ~  channeltype3.vert, sub2.asci.vert, median)
+  lat.asci.med.sba <- aggregate(ASCI.sba ~  channeltype3.lat, sub2.asci.lat, median)
+  vert.asci.length.sba <- aggregate(ASCI.sba ~  channeltype3.vert, sub2.asci.vert, length)
+  lat.asci.length.sba <- aggregate(ASCI.sba ~  channeltype3.lat, sub2.asci.lat, length)
   
   
 #test sig diff between natural low/med vs. high
