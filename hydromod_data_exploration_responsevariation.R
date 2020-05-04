@@ -6,7 +6,7 @@
 #install.packages("plyr")
 #install.packages("scales")
 #install.packages("MASS")
-install.packages("ggpubr")
+#install.packages("ggpubr")
 
 library(dplyr)
 library(ggplot2)
@@ -234,6 +234,7 @@ lat.lu.channeltype$smc_lu <- factor(lat.lu.channeltype$smc_lu, levels= c("Open",
 vert.lu.channeltype$count <- as.numeric(vert.lu.channeltype$count)
 lat.lu.channeltype$count <- as.numeric(lat.lu.channeltype$count)
 
+
 #overall counts in each of 6 categories
 #set factor levels for land use
 sub$smc_lu <- factor(sub$smc_lu, levels=c("Open", "Agricultural","Urban","SMC_out"))
@@ -248,26 +249,56 @@ anno2 <- data.frame(xstar = c(1,2,3,1,2,3), ystar = rep(0, 6),
 #set levels for channel type
 anno2$channeltype <- factor(anno2$channeltype, levels=c("Natural", "Engineered"))
 
+###UPDATE: add an All category for "Natural" and Engineered" to vert.lu.channeltype and lat.lu.channeltype
+
+#channel type 4 counts summary
+#remove all sites with lu smc_out
+ind.scmoutsub <- grep("SMC_out", sub$smc_lu)
+sub.nosmcout <- sub[-ind.scmoutsub,]
+#aggregate based on channel type and vert/lat ratings
+vert.suscept.4 <- data.frame(aggregate(sub.nosmcout, by = sub.nosmcout[c('channeltype','vert.rating')], length))
+vert.suscept.4$count <- vert.suscept.4$SiteYear
+lat.suscept.4 <- data.frame(aggregate(sub.nosmcout, by = sub.nosmcout[c('channeltype','av.lat.rating')], length))
+lat.suscept.4$count <- lat.suscept.4$SiteYear
+#add in vert.lu.ch4.names and column
+vert.suscept.4$vert.lu.ch4.names <- paste0("All ", vert.suscept.4$channeltype)
+lat.suscept.4$lat.lu.ch4.names <- paste0("All ", lat.suscept.4$channeltype)
+vert.suscept.4$smc_lu <- rep("All", length(vert.suscept.4$smc_lu))
+lat.suscept.4$smc_lu <- rep("All", length(lat.suscept.4$smc_lu))
+#merge all site summary with vert.lu.channeltype and lat.lu.channeltype
+merge.vert.lu.channeltype  <- full_join(vert.lu.channeltype,  vert.suscept.4, by = names(vert.suscept.4))
+merge.lat.lu.channeltype  <- full_join(lat.lu.channeltype,  lat.suscept.4, by = names(lat.suscept.4))
+#save smc_lu as factor and set levels
+merge.vert.lu.channeltype$smc_lu <- factor(merge.vert.lu.channeltype$smc_lu, levels = c("All","Open","Agricultural","Urban"))
+merge.lat.lu.channeltype$smc_lu <- factor(merge.lat.lu.channeltype$smc_lu, levels = c("All","Open","Agricultural","Urban"))
+
+#update annotation n values with added all category 
+#annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
+anno3 <- data.frame(xstar = c(1,2,3,4,1,2,3,4), ystar = rep(0, 8),
+                    lab = c("(130)","(71)", "(31)","(28)","(75)","(3)","(16)","(56)"),
+                    channeltype = c("Natural", "Natural","Natural","Natural","Engineered","Engineered","Engineered","Engineered"))
+#set levels for channel type
+anno3$channeltype <- factor(anno3$channeltype, levels=c("Natural", "Engineered"))
 
 
 #vertical suscept
-ggplot(data = vert.lu.channeltype) +
+ggplot(data = merge.vert.lu.channeltype) +
   geom_bar(color="black", aes(x = smc_lu, y = count, fill = factor(vert.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
   ggtitle("Vertical Susceptibility") +
   guides(fill = guide_legend(reverse = TRUE)) +
   facet_wrap(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free") +
   xlab("") + ylab("Proportion of Sites") +
-  geom_text(data = anno2, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
+  geom_text(data = anno3, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
   scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
 
 #lateral suscept
-ggplot(data = lat.lu.channeltype) +
+ggplot(data = merge.lat.lu.channeltype) +
   geom_bar(color="black", aes(x = smc_lu, y = count, fill = factor(av.lat.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
   ggtitle("Lateral Susceptibility") +
   guides(fill = guide_legend(reverse = TRUE)) +
   facet_wrap(~channeltype) +
   xlab("") + ylab("Proportion of Sites") +  
-  geom_text(data = anno2, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
+  geom_text(data = anno3, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
   scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
 
 
