@@ -322,7 +322,7 @@ ag.eng.low <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmco
 ag.eng.low$channeltype2 #half were partially hardened, half were fully hardened
 #what accounts for the low engineered urban? ANSW: 60% low engineered urban are fully hardened, 40% are partially
 urb.eng.low <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmcout$smc_lu == "Urban" & sub.nosmcout$av.lat.rating == 1,]
-urb.eng.low. <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmcout$smc_lu == "Urban" & sub.nosmcout$av.lat.rating == 1 & sub.nosmcout$channeltype2 == "Hardened Entire" ,]
+urb.eng.low.hardentire <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered" & sub.nosmcout$smc_lu == "Urban" & sub.nosmcout$av.lat.rating == 1 & sub.nosmcout$channeltype2 == "Hardened Entire" ,]
 #overall
 eng.low <- sub.nosmcout[sub.nosmcout$channeltype == "Engineered"  & sub.nosmcout$vert.rating == 1,]
 eng.low$channeltype2 #half were partially hardened, half were fully hardened
