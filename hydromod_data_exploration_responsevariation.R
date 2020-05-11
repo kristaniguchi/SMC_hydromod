@@ -642,6 +642,9 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   vert.csci.med <- aggregate(csci ~  channeltype3.vert, sub2.csci.vert, median)
   lat.csci.med <- aggregate(csci ~  channeltype3.lat, sub2.csci.lat, median)
   
+  #why very high natural sites with low scores
+  nat.vhigh.lat <- sub2.csci.lat[sub2.csci.lat$channeltype == "Natural" & sub2.csci.lat$av.lat.rating == 4,]
+  write.csv(nat.vhigh.lat, file="C:/Users/KristineT.SCCWRP2K/Documents/Git/SMC_hydromod/data/nat.vhigh.lat.csv")
   #Boxplots ASCI
   
   #annotate total number of sites in each bin/category
@@ -752,14 +755,35 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   p <- ggplot(sub.nat.csci.lat, aes(x = lat.combine, y = csci)) + geom_boxplot() + stat_compare_means(method = "t.test")
   
   
+  #test sig diff between natural low vs. very high CSCI lateral categores
+  #subset of natural only
+  sub.nat.csci.lat <- sub2.csci.lat[sub2.csci.lat$channeltype == "Natural",]
+  sub.nat.csci.lat$lat.combine2 <- sub.nat.csci.lat$channeltype3.lat
+  sub.nat.csci.lat$lat.combine2 <- gsub("Low\nNatural", "Low", sub.nat.csci.lat$lat.combine)
+  sub.nat.csci.lat$lat.combine2 <- gsub("Medium\nNatural", "Medium", sub.nat.csci.lat$lat.combine)
+  sub.nat.csci.lat$lat.combine2 <- gsub("Very\nHigh\nNatural", "VHigh", sub.nat.csci.lat$lat.combine, fixed=TRUE)
+  sub.nat.csci.lat$lat.combine2 <- gsub("High\nNatural", "High", sub.nat.csci.lat$lat.combine, fixed=TRUE)
+  sub.nat.csci.lat.low.vhigh <- sub.nat.csci.lat[sub.nat.csci.lat$lat.combine2 == "Low" | sub.nat.csci.lat$lat.combine2 == "VHigh",]
+  
+  p <- ggplot(sub.nat.csci.lat.low.vhigh, aes(x = lat.combine2, y = csci)) + geom_boxplot() + stat_compare_means(method = "t.test")
+  
+  #test sig diff between natural low/medium vs. very high CSCI lateral categores
+  #subset of natural only
+  sub.nat.csci.lat <- sub2.csci.lat[sub2.csci.lat$channeltype == "Natural",]
+  sub.nat.csci.lat$lat.combine3 <- sub.nat.csci.lat$channeltype3.lat
+  sub.nat.csci.lat$lat.combine3 <- gsub("Low\nNatural", "Low.Medium", sub.nat.csci.lat$lat.combine)
+  sub.nat.csci.lat$lat.combine3 <- gsub("Medium\nNatural", "Low.Medium", sub.nat.csci.lat$lat.combine)
+  sub.nat.csci.lat$lat.combine3 <- gsub("Very\nHigh\nNatural", "VHigh", sub.nat.csci.lat$lat.combine, fixed=TRUE)
+  sub.nat.csci.lat$lat.combine3 <- gsub("High\nNatural", "High", sub.nat.csci.lat$lat.combine, fixed=TRUE)
+  sub.nat.csci.lat.low.vhigh <- sub.nat.csci.lat[sub.nat.csci.lat$lat.combine3 == "Low.Medium" | sub.nat.csci.lat$lat.combine3 == "VHigh",]
+  
+  p <- ggplot(sub.nat.csci.lat.low.vhigh, aes(x = lat.combine3, y = csci)) + geom_boxplot() + stat_compare_means(method = "t.test")
+  
+  
+  
   sub9 <- sub2.asci.vert[sub2.asci.vert$channeltype3.vert == "Low\nHardened\nSide(s)",]
   
-  #  Add p-value
-  p + stat_compare_means()
-  
-  # Change method
-  p + stat_compare_means(method = "t.test")
-  
+
   
   fname <- paste0("P:/KrisTaniguchi/Hydromod_SMC/Data/", "sub2.asci.vert.csv")
    write.csv(sub2.asci.vert, fname, row.names=FALSE)
