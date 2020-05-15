@@ -183,7 +183,7 @@ ggplot(data = lat.lu.channeltype4) +
 
 
 ###############
-#Revision to barplots in natural vs. earthen category (channel type)
+#Revision1 to barplots in natural vs. engineered category (channel type)
 
 #vertical by land use channel type 
 #land use and channel type
@@ -332,6 +332,160 @@ length.eng.low.earthen <- length(grep("Earthen Engineered", eng.low$channeltype2
 pct.eng.low.hardentire <- length.eng.low.hardentire/(length.eng.low.hardentire+length.eng.low.hardenpart+length.eng.low.earthen)
 pct.eng.low.hardenpart  <- length.eng.low.hardenpart/(length.eng.low.hardentire+length.eng.low.hardenpart+length.eng.low.earthen)
 pct.eng.low.earthen <- length.eng.low.earthen/(length.eng.low.hardentire+length.eng.low.hardenpart+length.eng.low.earthen)
+
+
+######################
+#Revision2 to barplots in natural vs. hardened engineered vs. other engineered categories (channel type), add all category for all 3
+
+#create new channel type
+sub$channeltype5 <- sub$channeltype2
+unique(sub$channeltype5)
+#update with 3 categories above
+sub$channeltype5[sub$channeltype5=="Hardened Side(s)"] <- "Engineered\nEarthen & Hardened Side(s)"
+sub$channeltype5[sub$channeltype5=="Hardened Entire"] <- "Engineered\nHardened Entire"
+sub$channeltype5[sub$channeltype5=="Earthen Engineered"] <- "Engineered\nEarthen & Hardened Side(s)"
+
+#vertical by land use channel type 
+#land use and channel type
+sub$channeltype5 <- factor(sub$channeltype5, levels = c("Natural", "Engineered\nEarthen & Hardened Side(s)", "Engineered\nHardened Entire" ))
+vert.lu.channeltype5 <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype5','vert.rating')], length))
+vert.lu.channeltype5$count <- vert.lu.channeltype5$SiteYear
+#exlcude SMC_out land use
+vert.lu.channeltype5<- data.frame(vert.lu.channeltype5[vert.lu.channeltype5$smc_lu != "SMC_out",])
+
+#create new name for lu channeltype5
+vert.lu.channeltype5$vert.lu.ch4.names <- paste0(vert.lu.channeltype5$smc_lu, " ", vert.lu.channeltype5$channeltype5)
+vert.lu.channeltype5$vert.lu.ch4.names <- gsub("Agricultural", "Ag", vert.lu.channeltype5$vert.lu.ch4.names)
+#sum of sites in categories
+total.vert <- sum(vert.lu.channeltype5$count)
+total.vert.eng <- 11+3+53
+#engineered, agriculture summary by channel type3
+vert.lu.channeltype5.ag.eng <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype5','vert.rating','channeltype3')], length))
+pct.ag.eng.softbottom <- 7/11
+
+vert.lu.channeltype5.ag.eng <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype5','vert.rating','channeltype2')], length))
+lat.lu.channeltype5.ag.eng <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype5','av.lat.rating','channeltype2')], length))
+
+
+#lateral by land use channel type 
+#land use and channel type
+lat.lu.channeltype5 <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype5','av.lat.rating')], length))
+lat.lu.channeltype5$count <- lat.lu.channeltype5$SiteYear
+#exlcude SMC_out land use
+lat.lu.channeltype5<- data.frame(lat.lu.channeltype5[lat.lu.channeltype5$smc_lu != "SMC_out",])
+#create new name for lu channeltype5
+lat.lu.channeltype5$lat.lu.ch4.names <- paste0(lat.lu.channeltype5$smc_lu, " ", lat.lu.channeltype5$channeltype5)
+lat.lu.channeltype5$lat.lu.ch4.names <- gsub("Agricultural", "Ag", lat.lu.channeltype5$lat.lu.ch4.names)
+
+#count in each lu.channeltype5 category
+name.lu.chtype <- lat.lu.channeltype5$lat.lu.ch4.names
+count.lu.chtype <- lat.lu.channeltype5$count
+lu.channeltype5.count.df <- data.frame(cbind(name.lu.chtype, count.lu.chtype))
+
+#count of total natural 
+total.natural <- 71+31+28
+total.engineered <- 3+16+56
+lat.nat.h.vhigh <- 9+7+9+10+9+11
+prop.lat.nat.h.vh <- lat.nat.h.vhigh/total.natural
+vert.nat.h <- 15+22+19
+prop.vert.h <- vert.nat.h/total.natural
+
+#bar plot positions
+#reorder positions of lu
+vert.lu.channeltype5$smc_lu <- factor(vert.lu.channeltype5$smc_lu, levels= c("Open","Agricultural","Urban"))
+lat.lu.channeltype5$smc_lu <- factor(lat.lu.channeltype5$smc_lu, levels= c("Open","Agricultural","Urban"))
+
+#make sure count is numeric
+vert.lu.channeltype5$count <- as.numeric(vert.lu.channeltype5$count)
+lat.lu.channeltype5$count <- as.numeric(lat.lu.channeltype5$count)
+
+
+#overall counts in each of 6 categories
+#set factor levels for land use
+sub$smc_lu <- factor(sub$smc_lu, levels=c("Open", "Agricultural","Urban","SMC_out"))
+lat.lu.channeltype5.overall <- data.frame(aggregate(sub, by = sub[c('smc_lu','channeltype5')], length))
+ind.smcout <- grep("SMC_out", lat.lu.channeltype5.overall$smc_lu)
+lat.lu.channeltype5.overall <- lat.lu.channeltype5.overall[-ind.smcout,]
+
+#annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
+anno2 <- data.frame(xstar = c(1,2,3,1,2,3,1,2), ystar = rep(0, 8),
+                    lab = c("(71)", "(31)","(28)","(3)","(12)","(17)","(4)","(39)"),
+                    channeltype5 = c("Natural", "Natural","Natural","Engineered\nEarthen & Hardened Side(s)","Engineered\nEarthen & Hardened Side(s)","Engineered\nEarthen & Hardened Side(s)","Engineered\nHardened Entire","Engineered\nHardened Entire"))
+#set levels for channel type
+anno2$channeltype5 <- factor(anno2$channeltype5, levels=c("Natural", "Engineered\nEarthen & Hardened Side(s)", "Engineered\nHardened Entire"))
+
+###UPDATE: add an All category for "Natural", other engineered, hardened engineered to vert.lu.channeltype5 and lat.lu.channeltype5
+
+#channel type 4 counts summary
+#remove all sites with lu smc_out
+ind.scmoutsub <- grep("SMC_out", sub$smc_lu)
+sub.nosmcout <- sub[-ind.scmoutsub,]
+#aggregate based on channel type and vert/lat ratings
+vert.suscept.4 <- data.frame(aggregate(sub.nosmcout, by = sub.nosmcout[c('channeltype5','vert.rating')], length))
+vert.suscept.4$count <- vert.suscept.4$SiteYear
+lat.suscept.4 <- data.frame(aggregate(sub.nosmcout, by = sub.nosmcout[c('channeltype5','av.lat.rating')], length))
+lat.suscept.4$count <- lat.suscept.4$SiteYear
+#add in vert.lu.ch4.names and column
+vert.suscept.4$vert.lu.ch4.names <- paste0("All ", vert.suscept.4$channeltype5)
+lat.suscept.4$lat.lu.ch4.names <- paste0("All ", lat.suscept.4$channeltype5)
+vert.suscept.4$smc_lu <- rep("All", length(vert.suscept.4$smc_lu))
+lat.suscept.4$smc_lu <- rep("All", length(lat.suscept.4$smc_lu))
+#merge all site summary with vert.lu.channeltype5 and lat.lu.channeltype5
+merge.vert.lu.channeltype5  <- full_join(vert.lu.channeltype5,  vert.suscept.4, by = names(vert.suscept.4))
+merge.lat.lu.channeltype5  <- full_join(lat.lu.channeltype5,  lat.suscept.4, by = names(lat.suscept.4))
+#save smc_lu as factor and set levels
+merge.vert.lu.channeltype5$smc_lu <- factor(merge.vert.lu.channeltype5$smc_lu, levels = c("All","Open","Agricultural","Urban"))
+merge.lat.lu.channeltype5$smc_lu <- factor(merge.lat.lu.channeltype5$smc_lu, levels = c("All","Open","Agricultural","Urban"))
+
+#update annotation n values with added all category 
+#annotate the total number of sites in each bin outside of plot area, will use geom_text() and coord_cartesian(clip = "off")
+anno3 <- data.frame(xstar = c(1,2,3,4,1,2,3,4,1,2,3), ystar = rep(0, 11),
+                    lab = c("(130)","(71)", "(31)","(28)","(32)","(3)","(12)","(17)","(43)","(4)","(39)"),
+                    channeltype5 = c("Natural","Natural", "Natural","Natural","Engineered\nEarthen & Hardened Side(s)","Engineered\nEarthen & Hardened Side(s)","Engineered\nEarthen & Hardened Side(s)","Engineered\nEarthen & Hardened Side(s)","Engineered\nHardened Entire","Engineered\nHardened Entire","Engineered\nHardened Entire"))
+
+
+#set levels for channel type
+anno3$channeltype5 <- factor(anno3$channeltype5, levels=c("Natural", "Engineered\nEarthen & Hardened Side(s)", "Engineered\nHardened Entire"))
+
+
+#vertical suscept
+ggplot(data = merge.vert.lu.channeltype5) +
+  geom_bar(color="black", aes(x = smc_lu, y = count, fill = factor(vert.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
+  ggtitle("Vertical Susceptibility") +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  facet_wrap(~factor(channeltype5, levels=c("Natural", "Engineered\nEarthen & Hardened Side(s)", "Engineered\nHardened Entire")), scales = "free") +
+  xlab("") + ylab("Proportion of Sites") +
+  geom_text(data = anno3, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
+  scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
+
+#lateral suscept
+ggplot(data = merge.lat.lu.channeltype5) +
+  geom_bar(color="black", aes(x = smc_lu, y = count, fill = factor(av.lat.rating)), stat = "identity", position = position_fill(reverse = TRUE), width = 0.7) +
+  ggtitle("Lateral Susceptibility") +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  facet_wrap(~factor(channeltype5, levels=c("Natural", "Engineered\nEarthen & Hardened Side(s)", "Engineered\nHardened Entire")), scales = "free") +
+  xlab("") + ylab("Proportion of Sites") +
+  geom_text(data = anno3, aes(x = xstar,  y = ystar, label = lab), size=3, vjust = 5.5) +  coord_cartesian(clip = "off") +
+  scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
