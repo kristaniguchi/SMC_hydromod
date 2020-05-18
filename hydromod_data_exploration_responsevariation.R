@@ -888,7 +888,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   lat.asci.length.sba <- aggregate(ASCI.sba ~  channeltype3.lat, sub2.asci.lat, length)
   
   
-#test sig diff between natural low/med vs. high
+#test sig diff between natural low/med vs. high vertical ASCI
   #subset of natural only
   sub.nat <- sub2.asci.vert[sub2.asci.vert$channeltype == "Natural",]
   sub.nat$vert.combine <- sub.nat$channeltype3.vert
@@ -896,6 +896,17 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   sub.nat$vert.combine <- gsub("Medium\nNatural", "Low.Medium", sub.nat$vert.combine)
   
   p <- ggplot(sub.nat, aes(x = vert.combine, y = ASCI.hybrid)) + geom_boxplot() + stat_compare_means(method = "t.test")
+#test sig diff between natural low vs veryhigh lat ASCI  
+  #subset of natural only
+  sub.nat <- sub2.asci.lat[sub2.asci.lat$channeltype == "Natural",]
+  sub.nat$lat.combine <- sub.nat$channeltype3.lat
+  sub.nat$lat.combine <- gsub("Low\nNatural", "Low", sub.nat$lat.combine)
+  sub.nat$lat.combine <- gsub("Very\nHigh\nNatural", "VHigh", sub.nat$lat.combine)
+  sub.nat.asci.lat.low.vhigh <- sub.nat[sub.nat$lat.combine == "Low" | sub.nat$lat.combine == "VHigh",]
+  
+  p <- ggplot(sub.nat.asci.lat.low.vhigh, aes(x = lat.combine, y = ASCI.hybrid)) + geom_boxplot() + stat_compare_means(method = "t.test")
+  p
+  
   
   #test sig diff between natural low/med vs. high/very high CSCI lateral categores
   #subset of natural only
@@ -907,7 +918,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   sub.nat.csci.lat$lat.combine <- gsub("High\nNatural", "High.VHigh", sub.nat.csci.lat$lat.combine, fixed=TRUE)
   
   p <- ggplot(sub.nat.csci.lat, aes(x = lat.combine, y = csci)) + geom_boxplot() + stat_compare_means(method = "t.test")
-  
+  p
   
   #test sig diff between natural low vs. very high CSCI lateral categores
   #subset of natural only
@@ -920,6 +931,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   sub.nat.csci.lat.low.vhigh <- sub.nat.csci.lat[sub.nat.csci.lat$lat.combine2 == "Low" | sub.nat.csci.lat$lat.combine2 == "VHigh",]
   
   p <- ggplot(sub.nat.csci.lat.low.vhigh, aes(x = lat.combine2, y = csci)) + geom_boxplot() + stat_compare_means(method = "t.test")
+  p
   
   #test sig diff between natural low/medium vs. very high CSCI lateral categores
   #subset of natural only
@@ -932,7 +944,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   sub.nat.csci.lat.low.vhigh <- sub.nat.csci.lat[sub.nat.csci.lat$lat.combine3 == "Low.Medium" | sub.nat.csci.lat$lat.combine3 == "VHigh",]
   
   p <- ggplot(sub.nat.csci.lat.low.vhigh, aes(x = lat.combine3, y = csci)) + geom_boxplot() + stat_compare_means(method = "t.test")
-  
+  p
   
   
   sub9 <- sub2.asci.vert[sub2.asci.vert$channeltype3.vert == "Low\nHardened\nSide(s)",]
