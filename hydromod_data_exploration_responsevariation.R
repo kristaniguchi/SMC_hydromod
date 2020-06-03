@@ -853,7 +853,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     theme(legend.position="bottom") +
     geom_hline(yintercept=0.88, linetype="dashed", color = "black") +
     geom_text(aes(0,0.88, label=0.88, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
-    ggtitle("Lateral Susceptibility, ASCI") +
+    ggtitle("ASCI Hybrid vs. Lateral Susceptibility") +
     scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   al
   
