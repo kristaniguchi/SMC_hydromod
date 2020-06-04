@@ -754,6 +754,9 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
   cv
   
+  ggsave(cv, filename="cv.jpg", dpi=300, height=4, width=8)
+
+  
    #CSCI lateral
   #set levels for channeltype3.lat
   levels(sub2.csci.lat$channeltype3.lat)
@@ -792,6 +795,9 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   cl
   
+  ggsave(cl, filename="cl.jpg", dpi=300, height=4, width=8)
+  
+  
   #summary median values in boxplots
   vert.csci.med <- aggregate(csci ~  channeltype3.vert, sub2.csci.vert, median)
   lat.csci.med <- aggregate(csci ~  channeltype3.lat, sub2.csci.lat, median)
@@ -813,7 +819,7 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   anno.vert.asci <- data.frame(xstar = c(1:5), ystar = rep(0, 5),
                                lab = c(vert.channeltype3.asci$count))
   #lat.asci site counts for each category
-  #omit all sites that do not have CSCI values
+  #omit all sites that do not have ASCI values
   ind.NA.asci.lat <- which(is.na(sub2.lat$ASCI.hybrid))
   sub2.asci.lat <- data.frame(sub2.lat[-ind.NA.asci.lat,])
   #lat channel type 3
@@ -837,14 +843,17 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
   
   #ASCI vertical boxplots
   av <- ggplot(sub2.asci.vert, aes(x=channeltype3.vert, y=ASCI.hybrid, fill= factor(vert.rating))) + 
-    geom_boxplot()  + xlab("") + ylab("ASCI Hybrid Score") +
+    geom_boxplot()  + xlab("") + ylab("ASCI Score") +
     facet_grid(~factor(channeltype, levels=c("Natural", "Engineered")), scales = "free", space = "free")+
     theme(legend.position="bottom") +
     geom_hline(yintercept=0.88, linetype="dashed", color = "black") +
     geom_text(aes(0,0.88, label=0.88, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
-    ggtitle("ASCI Hybrid vs. Vertical Susceptibility") +
+    ggtitle("ASCI vs. Vertical Susceptibility") +
     scale_fill_manual(name = "Vertical Susceptibility", labels = c("Low", "Medium", "High"), values = c("green4","yellowgreen","orange1")) 
   av
+  
+  ggsave(av, filename="av.jpg", dpi=300, height=4, width=8)
+  
   
   #ASCI lateral boxplots
   al <- ggplot(sub2.asci.lat, aes(x=channeltype3.lat, y=ASCI.hybrid, fill= factor(av.lat.rating))) + 
@@ -853,9 +862,18 @@ sub2.lat <- data.frame(sub[-c(ind.NA, ind.NA.lat, ind.unk.lat),])
     theme(legend.position="bottom") +
     geom_hline(yintercept=0.88, linetype="dashed", color = "black") +
     geom_text(aes(0,0.88, label=0.88, vjust=-0.7, hjust=-0.2), size=3, color="grey41") +
-    ggtitle("ASCI Hybrid vs. Lateral Susceptibility") +
+    ggtitle("ASCI vs. Lateral Susceptibility") +
     scale_fill_manual(name = "Lateral Susceptibility", labels = c("Low", "Medium", "High", "Very High"), values = c("green4","yellowgreen","orange1","red3")) 
   al
+  
+  ggsave(al, filename="al.jpg", dpi=300, height=4, width=8)
+  
+  
+
+  
+  
+  
+  
   
   ##ADDITIONAL ASCI Plots to see if different when using softbodied, hybrid, diatoms
   #ASCI vertical boxplots --> diatoms
